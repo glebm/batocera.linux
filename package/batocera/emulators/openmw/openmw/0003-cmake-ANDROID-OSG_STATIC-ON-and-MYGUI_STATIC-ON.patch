@@ -1,0 +1,28 @@
+From 9d663fafffab660588b9b170ee14416351712469 Mon Sep 17 00:00:00 2001
+From: Gleb Mazovetskiy <glex.spb@gmail.com>
+Date: Wed, 13 Jan 2021 19:30:25 +0000
+Subject: [PATCH 3/4] cmake: ANDROID: OSG_STATIC=ON and MYGUI_STATIC=ON
+
+---
+ CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 22be162af..4d227cfd8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -167,6 +167,11 @@ if (USE_QT)
+     #set(CMAKE_AUTOMOC ON)
+ endif()
+ 
++if(ANDROID)
++    set(OSG_STATIC ON)
++    set(MYGUI_STATIC ON)
++endif()
++
+ # Sound setup
+ 
+ # Require at least ffmpeg 3.2 for now
+-- 
+2.27.0
+
