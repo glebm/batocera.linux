@@ -1,0 +1,39 @@
+From ecd35d7dfd13d4e9c8f9abfff19fec6b527bdc46 Mon Sep 17 00:00:00 2001
+From: Gleb Mazovetskiy <glex.spb@gmail.com>
+Date: Fri, 15 Jan 2021 15:11:50 +0000
+Subject: [PATCH] cmake/FindOSGPlugins: Support lib-prefixed plugins
+
+With a regular OSG build, the plugin names are prefixed with
+`lib`, e.g. `libosgdb_jpeg.a` for a static build.
+
+However, on Debian on Ubuntu they are not.
+
+With this commit we now try both options.
+
+Fixes #5972
+---
+ cmake/FindOSGPlugins.cmake | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/cmake/FindOSGPlugins.cmake b/cmake/FindOSGPlugins.cmake
+index c210466c0..4d2f26f25 100644
+--- a/cmake/FindOSGPlugins.cmake
++++ b/cmake/FindOSGPlugins.cmake
+@@ -27,9 +27,12 @@ foreach(_library ${OSGPlugins_FIND_COMPONENTS})
+     string(TOUPPER ${_library} _library_uc)
+     set(_component OSGPlugins_${_library})
+ 
+-    set(${_library_uc}_DIR ${OSGPlugins_LIB_DIR}) # to help function osg_find_library
++    # On some systems, notably Debian and Ubuntu, the OSG plugins do not have
++    # the usual "lib" prefix. We temporarily add the empty string to the list
++    # of prefixes CMake searches for (via osg_find_library) to support these systems.
+     set(_saved_lib_prefix ${CMAKE_FIND_LIBRARY_PREFIXES}) # save CMAKE_FIND_LIBRARY_PREFIXES
+-    set(CMAKE_FIND_LIBRARY_PREFIXES "") # search libraries with no prefix
++    set(CMAKE_FIND_LIBRARY_PREFIXES "" ${CMAKE_FIND_LIBRARY_PREFIXES}) # search libraries with no prefix
++    set(${_library_uc}_DIR ${OSGPlugins_LIB_DIR}) # to help function osg_find_library
+     osg_find_library(${_library_uc} ${_library}) # find it into ${_library_uc}_LIBRARIES
+     set(CMAKE_FIND_LIBRARY_PREFIXES ${_saved_lib_prefix}) # restore prefix
+ 
+-- 
+2.27.0
+
