@@ -349,3 +349,6 @@ mugen:
 flash:
   emulator: ruffle
   core:     ruffle
+openmw:
+  emulator: openmw
+  core:     openmw
