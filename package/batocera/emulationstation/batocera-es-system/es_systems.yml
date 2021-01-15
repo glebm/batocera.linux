@@ -1614,6 +1614,19 @@ xash3d_fwgs:
     Then, download https://github.com/FWGS/xash-extras/releases/latest/download/extras.pak and copy it to:
     /userdata/roms/xash3d_fwgs/extras.pak.
 
+openmw:
+  name:       OpenMW
+  manufacturer: Ports
+  release:
+  hardware:   port
+  extensions: [game]
+  group: ports
+  emulators:
+    openmw:
+      openmw: { requireAnyOf: [BR2_PACKAGE_OPENMW] }
+  comment_en: |
+    Morrowind engine.
+
 wiiu:
   name:       Wii U
   manufacturer: Nintendo
