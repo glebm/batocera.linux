@@ -3,6 +3,4 @@ source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/openmw/openmw/Con
 
 if BR2_PACKAGE_OPENMW
 source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/openmw/gl4es-openmw/Config.in"
-source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/openmw/mygui-openmw/Config.in"
-source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/emulators/openmw/osg-openmw/Config.in"
 endif
