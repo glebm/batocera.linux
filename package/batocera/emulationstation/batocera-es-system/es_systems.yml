@@ -1627,6 +1627,13 @@ openmw:
   comment_en: |
     Morrowind engine.
 
+    Installation:
+
+    Copy the "Data Files" directory from your Morrowind installation
+    to /userdata/roms/openmw/ and rename it to "morrowind".
+
+    Then, create an empty /userdata/roms/openmw/morrowind.game file.
+
 wiiu:
   name:       Wii U
   manufacturer: Nintendo

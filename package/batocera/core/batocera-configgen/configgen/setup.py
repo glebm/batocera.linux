@@ -48,5 +48,6 @@ setup(name='batocera-configgen',
         ],
         package_data={
           'configgen.generators.xash3d_fwgs': ['gamepad.cfg'],
+          'configgen.generators.openmw': ['morrowind-openmw.cfg'],
         },
       )
