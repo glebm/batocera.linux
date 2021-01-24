@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-GL4ES_OPENMW_VERSION = v1.1.4
+GL4ES_OPENMW_VERSION = e28f87abd6cb2013b4bee2f396efe488b28dce3f
 GL4ES_OPENMW_SITE = $(call github,ptitSeb,gl4es,$(GL4ES_OPENMW_VERSION))
 GL4ES_OPENMW_LICENSE = GPL-3.0+
 GL4ES_OPENMW_DEPENDENCIES = libgles

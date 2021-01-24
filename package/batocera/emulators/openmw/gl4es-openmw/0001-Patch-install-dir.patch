@@ -1,6 +1,6 @@
-From 8e079d9ee33883032fb2ddd319bbf6130e70028d Mon Sep 17 00:00:00 2001
+From 73a3e1a1f57ffebeb3a0e4b1c6459a800a2e6ff9 Mon Sep 17 00:00:00 2001
 From: Gleb Mazovetskiy <glex.spb@gmail.com>
-Date: Tue, 12 Jan 2021 21:20:53 +0000
+Date: Sat, 23 Jan 2021 00:14:36 +0000
 Subject: [PATCH] Patch install dir
 
 ---
@@ -8,22 +8,21 @@ Subject: [PATCH] Patch install dir
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 835d059..d63e5f2 100755
+index b290b96..9691221 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -211,10 +211,10 @@ else()
+@@ -215,9 +215,9 @@ else()
      endif()
      install(TARGETS GL
-     LIBRARY
+       LIBRARY
 -      DESTINATION "/usr/lib/gl4es/"
 +      DESTINATION "/usr/lib/openmw/gl4es/"
      )
-   install(FILES "../include/gl4esinit.h" "../include/gl4eshint.h"
--    DESTINATION "/usr/include/gl4es/"
-+    DESTINATION "/usr/include/openmw/gl4es/"
+     install(FILES "../include/gl4esinit.h" "../include/gl4eshint.h"
+-      DESTINATION "/usr/include/gl4es/"
++      DESTINATION "/usr/include/openmw/gl4es/"
      )
-   endif()
- 
+ endif()
 -- 
 2.27.0
 
