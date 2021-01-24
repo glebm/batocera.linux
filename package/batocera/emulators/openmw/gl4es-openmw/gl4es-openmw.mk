@@ -20,6 +20,13 @@ define GL4ES_OPENMW_COPY_HEADERS
 $(INSTALL) -D -m 0644 $(@D)/include/GL/*.h -t $(STAGING_DIR)/usr/include/openmw/gl4es/GL
 endef
 
+#### DEBUG HACKS
+BR2_STRIP_EXCLUDE_FILES += libGL1.so.1
+GL4ES_OPENMW_CONF_OPTS += -DCMAKE_BUILD_TYPE=RelWithDebInfo
+GL4ES_OPENMW_CMAKE_CXX_FLAGS += -g1 -fsanitize=undefined -fsanitize-recover=undefined -fsanitize=address -fsanitize-recover=address
+GL4ES_OPENMW_CONF_OPTS += -DCMAKE_CXX_FLAGS="$(GL4ES_OPENMW_CMAKE_CXX_FLAGS)"
+####
+
 GL4ES_OPENMW_POST_INSTALL_TARGET_HOOKS += GL4ES_OPENMW_COPY_HEADERS
 
 $(eval $(cmake-package))

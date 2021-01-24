@@ -96,6 +96,12 @@ endif
 # Disable common warning types to avoid polluting the build log.
 OPENMW_CMAKE_CXX_FLAGS += -Wno-psabi
 
+#### DEBUG HACKS
+BR2_STRIP_EXCLUDE_FILES += openmw
+OPENMW_CONF_OPTS += -DCMAKE_BUILD_TYPE=RelWithDebInfo
+OPENMW_CMAKE_CXX_FLAGS += -g1 -fsanitize=undefined -fsanitize-recover=undefined -fsanitize=address -fsanitize-recover=address
+####
+
 OPENMW_CONF_OPTS += -DCMAKE_CXX_FLAGS="$(OPENMW_CMAKE_CXX_FLAGS)"
 
 ifeq ($(BR2_PACKAGE_HAS_LIBGL),y)
@@ -115,5 +121,6 @@ OPENMW_CONF_OPTS += \
 # OpenSceneGraph:
 OPENMW_CONF_OPTS += -DOPENGL_PROFILE=GL2
 endif
+
 
 $(eval $(cmake-package))
