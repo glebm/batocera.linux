@@ -45,6 +45,9 @@ camera sensitivity = 0.4
 resolution x = {}
 resolution y = {}
 fullscreen = true
+
+[Physics]
+async num threads = 1
 """.format(w, h)
 
 
