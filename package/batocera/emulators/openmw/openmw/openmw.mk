@@ -7,8 +7,8 @@
 # NOTE: When bumping the version of this package, make sure that
 # `OPENMW_EXTRA_DOWNLOADS` are in sync with openmw's `extern/CMakeLists.txt`.
 
-# https://gitlab.com/OpenMW/openmw/-/merge_requests/547
-OPENMW_VERSION = 8cb654509979469ea89f08908b67bc33eab11078
+# https://gitlab.com/glebm/openmw/-/tree/hack1
+OPENMW_VERSION = eb0b6abf2f483acabadbe78b4223e323e8db2add
 OPENMW_SOURCE = openmw-$(OPENMW_VERSION).tar.gz
 OPENMW_SITE = https://gitlab.com/glebm/openmw/-/archive/$(OPENMW_VERSION)
 OPENMW_LICENSE = GPL-3.0+
@@ -20,8 +20,8 @@ OPENMW_DEPENDENCIES = sdl2 freetype fontconfig libpng jpeg boost ffmpeg lz4 open
 # We want to keep all downloads in the Buildroot's DL directory, so we download
 # them via buildroot and pass them explictly.
 OPENMW_BULLET_VERSION = ed5256454f4f84bd2c1728c88ddb0405d614e7d2
-OPENMW_MYGUI_VERSION = MyGUI3.4.0
-OPENMW_OSG_VERSION = b0259766eaee3cfc6bb523095a7e0bd395c2a4c7
+OPENMW_MYGUI_VERSION = f93d4fb614f843390cfe3492586466dc8d06c4b3
+OPENMW_OSG_VERSION = e65f47c4ab3a0b53cc19f517961671e5f840a08d
 OPENMW_RECASTNAVIGATION_VERSION = 70df86fd72063cdf7693ce1baa3c88f7c1f2885d
 OPENMW_BULLET_SOURCE = $(OPENMW_BULLET_VERSION).tar.gz
 OPENMW_MYGUI_SOURCE = $(OPENMW_MYGUI_VERSION).tar.gz
@@ -30,7 +30,7 @@ OPENMW_RECASTNAVIGATION_SOURCE = $(OPENMW_RECASTNAVIGATION_VERSION).tar.gz
 OPENMW_EXTRA_DOWNLOADS = \
 	$(call github,glebm,bullet3,$(OPENMW_BULLET_SOURCE)) \
 	$(call github,MyGUI,mygui,$(OPENMW_MYGUI_SOURCE)) \
-	$(call github,glebm,OpenSceneGraph,$(OPENMW_OSG_SOURCE)) \
+	$(call github,OpenMW,osg,$(OPENMW_OSG_SOURCE)) \
 	$(call github,glebm,recastnavigation,$(OPENMW_RECASTNAVIGATION_SOURCE))
 
 define OPENMW_EXTRACT_EXTRA_DOWNLOADS
