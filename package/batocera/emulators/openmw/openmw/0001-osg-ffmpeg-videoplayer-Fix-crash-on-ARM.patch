@@ -1,0 +1,146 @@
+From bfaee8e67feea3fc9977157f6be9f66d90bb2649 Mon Sep 17 00:00:00 2001
+From: Gleb Mazovetskiy <glex.spb@gmail.com>
+Date: Sun, 24 Jan 2021 06:11:44 +0000
+Subject: [PATCH] osg-ffmpeg-videoplayer: Fix crash on ARM
+
+osg-ffmpeg-videoplayer handled frame allocation incorrectly.
+
+It used a `vector<uint8_t>` as its buffer, meaning the addresses could
+did not respect alignment.
+
+Instead, changes it to use `AVFrame` as buffers, allocated via `av_image_alloc`.
+
+We also now only allocate the buffer once, instead of on every frame,
+which should improve the framerate of videos.
+
+Fixes the following crash on startup on ARM:
+
+> Invalid address alignment (signal 7)
+
+Fixes #5807
+---
+ extern/osg-ffmpeg-videoplayer/videostate.cpp | 36 +++++++++++++-------
+ extern/osg-ffmpeg-videoplayer/videostate.hpp |  3 +-
+ 2 files changed, 24 insertions(+), 15 deletions(-)
+
+diff --git a/extern/osg-ffmpeg-videoplayer/videostate.cpp b/extern/osg-ffmpeg-videoplayer/videostate.cpp
+index 5858d985a..471b50443 100644
+--- a/extern/osg-ffmpeg-videoplayer/videostate.cpp
++++ b/extern/osg-ffmpeg-videoplayer/videostate.cpp
+@@ -2,6 +2,7 @@
+ 
+ #include <algorithm>
+ #include <cassert>
++#include <cstddef>
+ #include <iostream>
+ #include <thread>
+ #include <chrono>
+@@ -49,7 +50,7 @@ VideoState::VideoState()
+     , av_sync_type(AV_SYNC_DEFAULT)
+     , audio_st(nullptr)
+     , video_st(nullptr), frame_last_pts(0.0)
+-    , video_clock(0.0), sws_context(nullptr), rgbaFrame(nullptr), pictq_size(0)
++    , video_clock(0.0), sws_context(nullptr), pictq_size(0)
+     , pictq_rindex(0), pictq_windex(0)
+     , mSeekRequested(false)
+     , mSeekPos(0)
+@@ -220,7 +221,7 @@ void VideoState::video_display(VideoPicture *vp)
+         osg::ref_ptr<osg::Image> image = new osg::Image;
+ 
+         image->setImage(this->video_ctx->width, this->video_ctx->height,
+-                        1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, &vp->data[0], osg::Image::NO_DELETE);
++                        1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, vp->rgbaFrame->data[0], osg::Image::NO_DELETE);
+ 
+         mTexture->setImage(image);
+     }
+@@ -308,11 +309,8 @@ int VideoState::queue_picture(AVFrame *pFrame, double pts)
+     }
+ 
+     vp->pts = pts;
+-    vp->data.resize(this->video_ctx->width * this->video_ctx->height * 4);
+-
+-    uint8_t *dst[4] = { &vp->data[0], nullptr, nullptr, nullptr };
+     sws_scale(this->sws_context, pFrame->data, pFrame->linesize,
+-              0, this->video_ctx->height, dst, this->rgbaFrame->linesize);
++              0, this->video_ctx->height, vp->rgbaFrame->data, vp->rgbaFrame->linesize);
+ 
+     // now we inform our display thread that we have a pic ready
+     this->pictq_windex = (this->pictq_windex+1) % VIDEO_PICTURE_ARRAY_SIZE;
+@@ -364,9 +362,6 @@ public:
+ 
+         pFrame = av_frame_alloc();
+ 
+-        self->rgbaFrame = av_frame_alloc();
+-        av_image_alloc(self->rgbaFrame->data, self->rgbaFrame->linesize, self->video_ctx->width, self->video_ctx->height, AV_PIX_FMT_RGBA, 1);
+-
+         while(self->videoq.get(packet, self) >= 0)
+         {
+             if(packet->data == flush_pkt.data)
+@@ -407,10 +402,7 @@ public:
+ 
+         av_packet_unref(packet);
+ 
+-        av_free(pFrame);
+-
+-        av_freep(&self->rgbaFrame->data[0]);
+-        av_free(self->rgbaFrame);
++        av_frame_free(&pFrame);
+     }
+ 
+ private:
+@@ -630,6 +622,18 @@ int VideoState::stream_open(int stream_index, AVFormatContext *pFormatCtx)
+             return -1;
+         }
+ 
++        // Allocate RGBA frame queue.
++        for (std::size_t i = 0; i < VIDEO_PICTURE_ARRAY_SIZE; ++i) {
++            AVFrame *frame = av_frame_alloc();
++            constexpr AVPixelFormat kPixFmt = AV_PIX_FMT_RGBA;
++            frame->format = kPixFmt;
++            frame->width = this->video_ctx->width;
++            frame->height = this->video_ctx->height;
++            av_image_alloc(frame->data, frame->linesize, frame->width, frame->height, kPixFmt, 1);
++            av_frame_free(&this->pictq[i].rgbaFrame);
++            this->pictq[i].rgbaFrame = frame;
++        }
++
+         this->video_thread.reset(new VideoThread(this));
+         break;
+ 
+@@ -771,6 +775,12 @@ void VideoState::deinit()
+         mTexture->setImage(nullptr);
+         mTexture = nullptr;
+     }
++
++    // Dellocate RGBA frame queue.
++    for (std::size_t i = 0; i < VIDEO_PICTURE_ARRAY_SIZE; ++i) {
++        av_frame_free(&this->pictq[i].rgbaFrame);
++    }
++
+ }
+ 
+ double VideoState::get_external_clock()
+diff --git a/extern/osg-ffmpeg-videoplayer/videostate.hpp b/extern/osg-ffmpeg-videoplayer/videostate.hpp
+index 641fce04b..ed226bcf2 100644
+--- a/extern/osg-ffmpeg-videoplayer/videostate.hpp
++++ b/extern/osg-ffmpeg-videoplayer/videostate.hpp
+@@ -95,7 +95,7 @@ struct VideoPicture {
+     VideoPicture() : pts(0.0)
+     { }
+ 
+-    std::vector<uint8_t> data;
++    AVFrame* rgbaFrame = nullptr;
+     double pts;
+ };
+ 
+@@ -160,7 +160,6 @@ struct VideoState {
+     PacketQueue videoq;
+     SwsContext*  sws_context;
+     VideoPicture pictq[VIDEO_PICTURE_ARRAY_SIZE];
+-    AVFrame*     rgbaFrame; // used as buffer for the frame converted from its native format to RGBA
+     int          pictq_size, pictq_rindex, pictq_windex;
+     std::mutex pictq_mutex;
+     std::condition_variable pictq_cond;
+-- 
+2.27.0
+
