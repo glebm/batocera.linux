@@ -59,7 +59,8 @@ OPENMW_CONF_OPTS += \
 	-DOPENMW_USE_SYSTEM_MYGUI=OFF \
 	-DOPENMW_USE_SYSTEM_OSG=OFF
 
-OPENMW_CONF_OPTS += \
+OPENMW_CONF_OPTS += -Wno-dev \
+	-DOPENMW_UNITY_BUILD=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	-OPENMW_VERSION_COMMITHASH=$(OPENMW_VERSION) \
 	-DBUILD_LAUNCHER=OFF \
@@ -71,12 +72,15 @@ OPENMW_CONF_OPTS += \
 	-DBUILD_ESMTOOL=OFF \
 	-DBUILD_NIFTEST=OFF
 
-# Enable link-time optimization.
-# Known to significantly improve OpenMW's performance.
+# Binary size with LTO goes from 25 MiB to 18 MiB.
+# Link time go up by 5-10 minutes.
+# Performance impact unknown.
+ifeq ($(BR2_OPENMW_ENABLE_LTO),y)
 OPENMW_CONF_OPTS += \
-	-DOPENMW_LTO_BUILD=ON \
-	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON \
-	-DCMAKE_POLICY_DEFAULT_CMP0069=NEW
+ 	-DOPENMW_LTO_BUILD=ON \
+ 	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+ 	-DCMAKE_POLICY_DEFAULT_CMP0069=NEW
+endif
 
 # MyGUI config options
 OPENMW_CONF_OPTS += \
@@ -94,7 +98,8 @@ OPENMW_CONF_OPTS += -DOSG_WINDOWING_SYSTEM=None
 endif
 
 # Disable common warning types to avoid polluting the build log.
-OPENMW_CMAKE_CXX_FLAGS += -Wno-psabi
+OPENMW_CMAKE_CXX_FLAGS = $(TARGET_CXXFLAGS)
+OPENMW_CMAKE_CXX_FLAGS += -Wno-psabi -Wno-deprecated-copy -Wno-maybe-uninitialized -Wno-suggest-override
 
 OPENMW_CONF_OPTS += -DCMAKE_CXX_FLAGS="$(OPENMW_CMAKE_CXX_FLAGS)"
 
@@ -105,12 +110,16 @@ OPENMW_DEPENDENCIES += libgl
 OPENMW_DEPENDENCIES += libfreeglut libgtk2 # libgl already added
 OPENMW_CONF_OPTS += -DOPENGL_PROFILE=GL2
 else
-# Needed by OpenMW itself and OpenSceneGraph:
+# Needed by OpenMW itself and OpenSceneGraph.
 OPENMW_DEPENDENCIES += gl4es-openmw
+
+# OPENGL_glx_LIBRARY is unused but must be set for cmake config
+# to suceed.
 OPENMW_CONF_OPTS += \
 	-DOPENGL_gl_LIBRARY=$(TARGET_DIR)/usr/lib/openmw/gl4es/libGL.so.1 \
 	-DOPENGL_glx_LIBRARY=$(TARGET_DIR)/usr/lib/openmw/gl4es/libGL.so.1 \
-	-DOPENGL_INCLUDE_DIR=$(STAGING_DIR)/usr/include/openmw/gl4es
+	-DOPENGL_INCLUDE_DIR=$(STAGING_DIR)/usr/include/openmw/gl4es \
+	-DOPENMW_GL4ES_MANUAL_INIT=ON
 
 # OpenSceneGraph:
 OPENMW_CONF_OPTS += -DOPENGL_PROFILE=GL2

@@ -81,8 +81,6 @@ class OpenMWGenerator(Generator):
         return Command.Command(
             array=commandArray,
             env={
-                'LIBGL_NOTEST': '1',
-                'LIBGL_USEVBO': '0', # HACK crashes otherwise
                 'OPENMW_GLES_VERSION': '2',
                 'XDG_CONFIG_HOME': _config_dir(game),
                 'XDG_DATA_HOME': _save_dir(game),
