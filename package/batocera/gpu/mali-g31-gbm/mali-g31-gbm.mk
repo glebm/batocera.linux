@@ -14,15 +14,6 @@ MALI_G31_GBM_CONF_OPTS = \
 	-Dgpu=bifrost-g31 \
 	-Dversion=rxp0
 
-ifneq ($(BR2_PACKAGE_MESA3D),y)
-# See https://github.com/rockchip-linux/libmali/issues/66
-define MALI_G31_GBM_COPY_KHRPLATFORM_STAGING
-	cp $(STAGING_DIR)/usr/include/KHR/mali_khrplatform.h \
-		$(STAGING_DIR)/usr/include/KHR/khrplatform.h
-endef
-MALI_G31_GBM_POST_INSTALL_STAGING_HOOKS += MALI_G31_GBM_COPY_KHRPLATFORM_STAGING
-endif
-
 ifeq ($(BR2_PACKAGE_BATOCERA_TARGET_ODROIDGOA),y)
 # See https://wiki.odroid.com/odroid_go_advance/application_note/vulkan_on_rk3326
 MALI_G31_GBM_EXTRA_DOWNLOADS=https://dn.odroid.com/RK3326/ODROID-GO-Advance/rk3326_r13p0_gbm_with_vulkan_and_cl.zip
